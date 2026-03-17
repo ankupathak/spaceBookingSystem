@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Welcome</title>
+</head>
+<body>
+<h2>Welcome, <span th:text="${name}">User</span>!</h2>
+
+<p>Your verification code is:</p>
+<h1 th:text="${otp}">000000</h1>
+
+<p>Thanks,<br/>Space Booking Team</p>
+</body>
+</html>

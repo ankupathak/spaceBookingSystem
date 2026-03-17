@@ -1,0 +1,36 @@
+jwt:
+  secret: 9f3c7a1e4b8d2f6c0a5e91b3d7c4f8a2e6b1c9d0f3a7b5c8e2d4f6a1b9c0d3e7
+  access:
+    expiry: 900000 #15 min in ms
+  refresh:
+    expiry: 2592000000  # 30 days in ms
+    rotate:
+      threshold: 7  # rotate when 7 days remaining
+spring:
+  my-app:
+    mail:
+      from: ankupathak004@zohomail.in
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  datasource:
+    url: jdbc:mysql://localhost:8889/spaceBookingSystem
+    username: root
+    password: root
+  flyway:
+    enabled: true
+    locations: classpath:db/migration,classpath:db/seed
+  mail:
+    host: smtp.zoho.in
+    port: 587
+    username: ankupathak004@zohomail.in
+    password: JYhMeWTaXhWv
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.zoho.in

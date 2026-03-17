@@ -1,0 +1,1 @@
+INSERT INTO otp_types (otp_type_id,code) VALUES (1,'create.account.email.otp');

@@ -1,0 +1,31 @@
+spring:
+  my-app:
+    jwt:
+      secret: ${}
+      access:
+        expiry: 900000 #15 min in ms
+      refresh:
+        expiry: 2592000000  # 30 days in ms
+        rotate:
+          threshold: 7  # rotate when 7 days remaining
+    mail:
+      from: ankupathak004@zohomail.in
+  data:
+    redis:
+      host: ${}
+      port: ${}
+  datasource:
+    url: ${MYSQL_DB_URL}
+    username: ${MYSQL_DB_USER}
+    password: ${MYSQL_DB_PASSWORD}
+  flyway:
+    enabled: false
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    smtp:
+      auth: true
+      starttls:
+        enable: true
