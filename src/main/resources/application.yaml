@@ -1,8 +1,31 @@
+jwt:
+  access:
+    secret: ${JWT_ACCESS_SECRET}
+    expiry:
+      ms: ${JWT_ACCESS_SECRET_EXPIRY_MS}
+      mins: ${JWT_ACCESS_SECRET_EXPIRY_MINS}
+      days: ${JWT_ACCESS_SECRET_EXPIRY_DAYS}
+  refresh:
+    secret: ${JWT_REFRESH_SECRET}
+    expiry:
+      ms: ${JWT_REFRESH_SECRET_EXPIRY_MS}
+      mins: ${JWT_REFRESH_SECRET_EXPIRY_MINS}
+      days: ${JWT_REFRESH_SECRET_EXPIRY_DAYS}
+    rotate:
+      threshold: ${JWT_REFRESH_THRESHOLD}
 spring:
+  environment: ${APPLICATION_ENVIRONMENT}
   profiles:
     active: local
   application:
     name: spaceBookingSystem
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+  datasource:
+    username: ${DATABASE_MYSQL_USERNAME}
+    password: ${DATABASE_MYSQL_PASSWORD}
   jpa:
     show-sql: true
     generate-ddl: false
@@ -11,8 +34,22 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_GOOGLE_USERNAME}
+    password: ${EMAIL_GOOGLE_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          starttls:
+            enable: true
   flyway:
-    enabled: true
+    enabled: false
   logging:
     level:
       org.flywaydb: DEBUG

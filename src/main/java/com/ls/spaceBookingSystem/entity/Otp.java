@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.type.descriptor.jdbc.TinyIntJdbcType;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -38,6 +39,6 @@ public class Otp extends BaseTimeStamp {
     @Column(name = "remaining_attempts")
     private byte remainingAttempts = 3;
 
-    @Column(name = "expired_at")
-    private LocalDateTime expiredAt;
+    @Column(name = "expired_at", columnDefinition = "TIMESTAMP")
+    private Instant expiredAt;
 }

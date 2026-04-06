@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 
 public interface OtpRepository extends JpaRepository<Otp, Long> {
@@ -20,17 +20,18 @@ public interface OtpRepository extends JpaRepository<Otp, Long> {
     long countOtpsSentInWindow(
         @Param("userId") Long userId,
         @Param("otpTypeId") int otpTypeId,
-        @Param("fromTime") LocalDateTime fromTime
+        @Param("fromTime") Instant fromTime
     );
 
     @Query(value = "SELECT * FROM otps WHERE user_id = :userId " +
             "AND otp_type_id = :otpTypeId " +
             "AND remaining_attempts > 0 " +
-            "AND expired_at > CURRENT_TIMESTAMP " +
+            "AND expired_at > :expiredAt " +
             "ORDER BY created_at DESC LIMIT 1",
             nativeQuery = true)
     Optional<Otp> findLatestOtp(@Param("userId") long userId,
-                                @Param("otpTypeId") int otpTypeId);
+                                @Param("otpTypeId") int otpTypeId,
+                                @Param("expiredAt") Instant expiredAt);
 
     @Modifying
     @Query(value = "UPDATE otps SET remaining_attempts = :remainingAttempts WHERE otp_id = :otpId",

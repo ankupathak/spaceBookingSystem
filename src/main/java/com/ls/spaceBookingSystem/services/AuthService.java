@@ -1,16 +1,20 @@
 package com.ls.spaceBookingSystem.services;
 
+import com.ls.spaceBookingSystem.config.JwtProperties;
 import com.ls.spaceBookingSystem.constants.OtpTypes;
 import com.ls.spaceBookingSystem.dtos.requests.CreateAccountRequest;
 import com.ls.spaceBookingSystem.dtos.requests.LoginRequest;
 import com.ls.spaceBookingSystem.dtos.requests.VerifyAndLoginRequest;
 import com.ls.spaceBookingSystem.dtos.responses.TokenResponse;
-import com.ls.spaceBookingSystem.entity.RefreshToken;
+import com.ls.spaceBookingSystem.entity.AuthDevice;
+import com.ls.spaceBookingSystem.entity.AuthDeviceId;
 import com.ls.spaceBookingSystem.entity.User;
 import com.ls.spaceBookingSystem.errors.ErrorCode;
 import com.ls.spaceBookingSystem.exceptions.AppException;
-import com.ls.spaceBookingSystem.repository.RefreshTokenRepository;
+import com.ls.spaceBookingSystem.repository.AuthDeviceRepository;
 import com.ls.spaceBookingSystem.repository.UserRepository;
+import com.ls.spaceBookingSystem.services.jwt.data.AccessTokenData;
+import com.ls.spaceBookingSystem.services.jwt.data.RefreshTokenData;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.Optional;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -36,7 +43,7 @@ public class AuthService {
     private UserRepository userRepository;
 
     @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
+    private AuthDeviceRepository authDeviceRepository;
 
     @Autowired
     private  OtpService otpService;
@@ -52,6 +59,12 @@ public class AuthService {
 
     @Autowired
     private  EmailTemplateService emailTemplateService;
+
+    @Autowired
+    private TokenBlacklistService blacklistService;
+
+    @Autowired
+    private JwtProperties jwtProperties;
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -91,7 +104,6 @@ public class AuthService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
-
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
 
@@ -103,49 +115,100 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout(Long userId, HttpServletResponse response) {
-        refreshTokenRepository.deleteByUserUserId(userId);
-        userRepository.incrementTokenVersion(userId);
+    public void logout(String refreshToken, HttpServletResponse response) {
+
+        if(refreshToken.isEmpty()) {
+            return;
+        }
+
+        RefreshTokenData refreshTokenData = jwtService.validateAndExtract(refreshToken, jwtProperties.getRefreshType());
+
+        String key = refreshTokenData.getUserId()+":"+refreshTokenData.getDeviceId();
+        if(blacklistService.containsKey(key)) {
+            cookieService.clearRefreshCookie(response);
+            return;
+        }
+
+
+        AuthDevice authDeviceEntity = authDeviceRepository.findByIdDeviceIdAndIdUserId(
+                refreshTokenData.getDeviceId(), refreshTokenData.getUserId()
+        ).orElse(null);
+
+
+        if(authDeviceEntity == null) {
+            cookieService.clearRefreshCookie(response);
+            return;
+        }
+
+        Instant currentTime = Instant.now();
+        if(authDeviceEntity.getExpiresAt().isAfter(currentTime)) {
+            authDeviceEntity.setExpiresAt(currentTime);
+            authDeviceRepository.save(authDeviceEntity);
+        } else {
+            currentTime = authDeviceEntity.getExpiresAt();
+        }
+
+        long minsUntilExpiry = Duration.between(currentTime, Instant.now()).toMinutes();
+        blacklistService.blacklist(key,"1", minsUntilExpiry);
+
         cookieService.clearRefreshCookie(response);
+
     }
 
     @Transactional
-    public TokenResponse refresh(String refreshToken, HttpServletResponse response) {
-        if (!jwtService.isTokenValid(refreshToken)) {
+    public TokenResponse refresh(String refreshToken, HttpServletRequest request, HttpServletResponse response) {
+
+        if(refreshToken.isEmpty()) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        String tokenHash = hashToken(refreshToken);
 
-        RefreshToken storedToken = refreshTokenRepository.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+        RefreshTokenData refreshTokenData = jwtService.validateAndExtract(refreshToken, jwtProperties.getRefreshType());
 
-        User user        = storedToken.getUser();
-        int  dbVersion   = user.getTokenVersion();
-        int  tokenVersion = jwtService.extractVersion(refreshToken);
+        AuthDevice authDeviceEntity = authDeviceRepository.findByIdDeviceIdAndIdUserId(refreshTokenData.getDeviceId(),refreshTokenData.getUserId())
+                .orElseThrow(() -> {
+                    cookieService.clearRefreshCookie(response);
+                    return new AppException(ErrorCode.UNAUTHENTICATED);
+                });
 
-        if (tokenVersion != dbVersion) {
+        Instant tokenExpiry   = authDeviceEntity.getExpiresAt();
+        if (tokenExpiry.isBefore(Instant.now())) {
+            cookieService.clearRefreshCookie(response);
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        String newAccessToken = jwtService.generateAccessToken(user);
-        String newJti         = jwtService.extractJti(newAccessToken);
+        User user = authDeviceEntity.getUser();
+        Instant  tokenValidAfter   = user.getTokenValidAfter();
 
-        storedToken.setActiveJti(newJti);
+        if (!tokenValidAfter.equals(refreshTokenData.getValidAfter())) {
+            cookieService.clearRefreshCookie(response);
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
 
-        if (jwtService.shouldRotate(refreshToken)) {
-            String newRefreshToken = jwtService.generateRefreshToken(user);
-            storedToken.setTokenHash(hashToken(newRefreshToken));
-            storedToken.setExpiresAt(LocalDateTime.now().plusDays(30));
+        AccessTokenData accessTokenData = new AccessTokenData();
+        accessTokenData.setUserId(user.getUserId());
+        accessTokenData.setDeviceId(authDeviceEntity.getId().getDeviceId());
+        List<String> roles = user.getRoles().stream()
+                .map(ur -> ur.getRole().getRoleName())
+                .toList();
+        accessTokenData.setRoles(roles);
+        String newAccessToken  = jwtService.generate(jwtProperties.getAccessType(), accessTokenData);
+
+
+        if (jwtService.shouldRotate(refreshTokenData)) {
+            RefreshTokenData newRefreshTokenData = new RefreshTokenData();
+            refreshTokenData.setUserId(user.getUserId());
+            refreshTokenData.setDeviceId(authDeviceEntity.getId().getDeviceId());
+            refreshTokenData.setValidAfter(user.getTokenValidAfter());
+            String newRefreshToken = jwtService.generate(jwtProperties.getRefreshType(),refreshTokenData);
+
             cookieService.setRefreshCookie(response, newRefreshToken);
         }
 
-        int updated = refreshTokenRepository.updateIfUnchanged(
-                storedToken.getId(),
-                newJti,
-                storedToken.getTokenHash(),
-                storedToken.getExpiresAt(),
-                storedToken.getUpdatedAt()
+        int updated = authDeviceRepository.updateIfUnchanged(
+                authDeviceEntity.getId().getDeviceId(),
+                authDeviceEntity.getId().getUserId(),
+                authDeviceEntity.getExpiresAt().plus(jwtProperties.getAccessExpiryInDays(), ChronoUnit.DAYS)
         );
 
         if (updated == 0) {
@@ -170,17 +233,29 @@ public class AuthService {
 
     @Transactional
     private TokenResponse issueTokens(User user, HttpServletResponse response) {
-        String accessToken  = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
-        String jti          = jwtService.extractJti(accessToken);
-        log.error("jti={}",jti);
-        // Save new refresh token
-        RefreshToken refreshTokenEntity = new RefreshToken();
-        refreshTokenEntity.setUserId(user.getUserId());
-        refreshTokenEntity.setTokenHash(hashToken(refreshToken));
-        refreshTokenEntity.setActiveJti(jti);
-        refreshTokenEntity.setExpiresAt(LocalDateTime.now().plusDays(30));
-        refreshTokenRepository.save(refreshTokenEntity);
+
+        RefreshTokenData refreshTokenData = new RefreshTokenData();
+        refreshTokenData.setUserId(user.getUserId());
+        refreshTokenData.setDeviceId(UUID.randomUUID().toString());
+        refreshTokenData.setValidAfter(user.getTokenValidAfter());
+        String refreshToken = jwtService.generate(jwtProperties.getRefreshType(),refreshTokenData);
+
+        AccessTokenData accessTokenData = new AccessTokenData();
+        accessTokenData.setUserId(user.getUserId());
+        accessTokenData.setDeviceId(refreshTokenData.getDeviceId());
+        List<String> roles = user.getRoles().stream()
+                .map(ur -> ur.getRole().getRoleName())
+                .toList();
+        accessTokenData.setRoles(roles);
+        String accessToken = jwtService.generate(jwtProperties.getAccessType(), accessTokenData);
+
+        AuthDevice authDeviceEntity = new AuthDevice();
+        AuthDeviceId authDeviceId = new AuthDeviceId();
+        authDeviceId.setDeviceId(refreshTokenData.getDeviceId());
+        authDeviceId.setUserId(refreshTokenData.getUserId());
+        authDeviceEntity.setId(authDeviceId);
+        authDeviceEntity.setUser(user);
+        authDeviceRepository.save(authDeviceEntity);
 
         cookieService.setRefreshCookie(response, refreshToken);
         return new TokenResponse(accessToken);

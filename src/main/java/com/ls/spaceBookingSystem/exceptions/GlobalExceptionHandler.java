@@ -7,8 +7,10 @@ import com.ls.spaceBookingSystem.errors.FieldError;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,6 +27,9 @@ public class GlobalExceptionHandler {
     /* -----------------------------------
        MethodArgumentNotValidException @Valid
        ----------------------------------- */
+    @Value("${spring.environment}")
+    private String applicationEnviroment;
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleAtValid(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
@@ -64,6 +69,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(code.getStatus()).body(
                 buildResponse(code.getStatus(), code.getCode(), ex.getMessage(),
                         request, toResponseFieldErrors(ex.getErrors()))
+        );
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(
+            BadCredentialsException ex, HttpServletRequest request) {
+        ErrorCode invalidCredential = ErrorCode.INVALID_CREDENTIALS;
+        return ResponseEntity.status(invalidCredential.getStatus()).body(
+                buildResponse(invalidCredential.getStatus(), invalidCredential.getCode(),
+                        invalidCredential.getMessage(), request, null)
         );
     }
 
