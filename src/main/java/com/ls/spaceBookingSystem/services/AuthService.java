@@ -70,10 +70,8 @@ public class AuthService {
     private AuthenticationManager authenticationManager;
 
     public String registration(CreateAccountRequest user) {
-
         User newUser = userRepository.findByEmail(user.getEmail())
                 .orElseGet(() -> createNewUser(user));
-
         if(newUser.isEmailVerified()) {
             throw new AppException(ErrorCode.EMAIL_TAKEN);
         }
@@ -200,20 +198,19 @@ public class AuthService {
             refreshTokenData.setUserId(user.getUserId());
             refreshTokenData.setDeviceId(authDeviceEntity.getId().getDeviceId());
             refreshTokenData.setValidAfter(user.getTokenValidAfter());
-            String newRefreshToken = jwtService.generate(jwtProperties.getRefreshType(),refreshTokenData);
+            String newRefreshToken = jwtService.generate(jwtProperties.getRefreshType(),newRefreshTokenData);
 
             cookieService.setRefreshCookie(response, newRefreshToken);
-        }
+            int updated = authDeviceRepository.updateIfUnchanged(
+                    authDeviceEntity.getId().getDeviceId(),
+                    authDeviceEntity.getId().getUserId(),
+                    authDeviceEntity.getExpiresAt().plus(jwtProperties.getRefreshExpiryInDays(), ChronoUnit.DAYS)
+            );
 
-        int updated = authDeviceRepository.updateIfUnchanged(
-                authDeviceEntity.getId().getDeviceId(),
-                authDeviceEntity.getId().getUserId(),
-                authDeviceEntity.getExpiresAt().plus(jwtProperties.getAccessExpiryInDays(), ChronoUnit.DAYS)
-        );
-
-        if (updated == 0) {
-            // Someone else updated it between our read and write
-            throw new AppException(ErrorCode.CONCURRENT_REFRESH);
+            if (updated == 0) {
+                // Someone else updated it between our read and write
+                throw new AppException(ErrorCode.CONCURRENT_REFRESH);
+            }
         }
 
         return new TokenResponse(newAccessToken);

@@ -17,7 +17,7 @@ public interface OtpRepository extends JpaRepository<Otp, Long> {
         "AND o.otp_type_id = :otpTypeId " +
         "AND o.created_at > :fromTime",   // ← column name not field name
         nativeQuery = true)
-    long countOtpsSentInWindow(
+    int countOtpsSentInWindow(
         @Param("userId") Long userId,
         @Param("otpTypeId") int otpTypeId,
         @Param("fromTime") Instant fromTime

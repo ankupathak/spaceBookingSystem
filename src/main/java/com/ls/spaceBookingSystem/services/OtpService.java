@@ -50,12 +50,12 @@ public class OtpService {
     }
 
     private boolean isLimitCrossed(long userId, Instant fromTime, int otpTypeId) {
-        long count = otpRepository.countOtpsSentInWindow(
+        int count = otpRepository.countOtpsSentInWindow(
                 userId,
                 otpTypeId,
                 Instant.now().minus(1, ChronoUnit.HOURS)
         );
-
+        System.out.println("count =" +count);
         return count >= 5;
     }
 
