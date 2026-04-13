@@ -4,3 +4,12 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration,classpath:db/seed
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,conditions
+  endpoint:
+    health:
+      show-details: always
+      show-components: always

@@ -16,7 +16,12 @@ public class TokenBlacklistService {
 
     private static final String BLACKLIST_PREFIX = "bl:";
 
-    // Store only jti, not full token
+    public void test() {
+        redisTemplate.opsForValue().set("key", "Hello Redis");
+        String value = redisTemplate.opsForValue().get("key");
+        System.out.println("Value: " + value);
+    }
+
     public void blacklist(String key, String value, long expiryInMins) {
         if (expiryInMins > 0) {
             redisTemplate.opsForValue().set(
@@ -27,14 +32,6 @@ public class TokenBlacklistService {
             );
         }
     }
-
-//    public boolean containsKey(String key) {
-//        return redisTemplate.hasKey(AUTH_PREFIX+key);
-////        return Boolean.TRUE.equals(
-////                redisTemplate.hasKey(BLACKLIST_PREFIX + jti)
-////        );
-//
-//    }
 
     public boolean isTokenBlackListedOrInvalidated(String jti, long userId, Instant tokenIssueAt) {
         List<String> keys = List.of(
@@ -77,9 +74,4 @@ public class TokenBlacklistService {
         return false;
     }
 
-//    public boolean isUserEmergencyRevoked(Long userId, Date tokenIssuedAt) {
-//        String revokedAt = redisTemplate.opsForValue().get("revoked_user:" + userId);
-//        if (revokedAt == null) return false;
-//        return tokenIssuedAt.getTime() < Long.parseLong(revokedAt);
-//    }
 }
