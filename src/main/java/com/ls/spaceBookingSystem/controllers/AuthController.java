@@ -44,28 +44,27 @@ public class AuthController {
     public ResponseEntity<TokenResponse> login(
             @RequestBody @Valid LoginRequest request,
             HttpServletResponse response) {
+
         return ResponseEntity.ok(authService.login(request, response));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(
-            HttpServletRequest request,
+            @CookieValue(value = "refresh_token", required = false) String refreshToken,
             HttpServletResponse response) {
-        Long userId = jwtService.extractUserId(
-                jwtService.extractTokenFromRequest(request)
-        );
-        authService.logout(userId, response);
+        authService.logout(refreshToken, response);
         return ResponseEntity.ok("Logged out successfully");
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(
             @CookieValue(value = "refresh_token", required = false) String refreshToken,
+            HttpServletRequest request,
             HttpServletResponse response) {
 
         if (refreshToken == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(authService.refresh(refreshToken, response));
+        return ResponseEntity.ok(authService.refresh(refreshToken, request, response));
     }
 }

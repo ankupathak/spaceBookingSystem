@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,14 +35,6 @@ public class User extends BaseTimeStamp {
     @OneToMany(mappedBy = "user")
     private List<UserRole> roles = new ArrayList<>();
 
-    @Column(name = "token_version", nullable = false)
-    private int tokenVersion = 0;
-
-//    @CreationTimestamp
-//    @Column(name = "updated_at", nullable = false)
-//    private LocalDateTime updatedAt;
-//
-//    @CreationTimestamp
-//    @Column(name = "created_at", updatable = false, nullable = false)
-//    private LocalDateTime createdAt;
+    @Column(name = "tokens_valid_after", nullable = false, columnDefinition = "TIMESTAMP")
+    private Instant tokenValidAfter;
 }

@@ -12,7 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -40,7 +41,7 @@ public class OtpService {
     }
 
     private void validateOtpSendRules(long userId, int otpTypeId) {
-        if (isLimitCrossed(userId, LocalDateTime.now().minusHours(1), otpTypeId)) {
+        if (isLimitCrossed(userId, Instant.now().minus(1, ChronoUnit.MINUTES), otpTypeId)) {
             throw new AppException(ErrorCode.OTP_MAX_ATTEMPTS);
         }
         if (!hasMinimumGapBetweenOtps(userId, otpTypeId)) {
@@ -48,24 +49,25 @@ public class OtpService {
         }
     }
 
-    private boolean isLimitCrossed(long userId, LocalDateTime fromTime, int otpTypeId) {
-        long count = otpRepository.countOtpsSentInWindow(
+    private boolean isLimitCrossed(long userId, Instant fromTime, int otpTypeId) {
+        int count = otpRepository.countOtpsSentInWindow(
                 userId,
                 otpTypeId,
-                LocalDateTime.now().minusHours(1)
+                Instant.now().minus(1, ChronoUnit.HOURS)
         );
-
+        System.out.println("count =" +count);
         return count >= 5;
     }
 
     private boolean hasMinimumGapBetweenOtps(long userId, int otpTypeId) {
         Optional<Otp> lastOtpOpt = otpRepository.findLatestOtp(
                 userId,
-                otpTypeId
+                otpTypeId,
+                Instant.now()
         );
         if(lastOtpOpt.isPresent()) {
-            LocalDateTime lastTime = lastOtpOpt.get().getCreatedAt();
-            return !lastTime.isAfter(LocalDateTime.now().minusMinutes(1));
+            Instant lastTime = lastOtpOpt.get().getCreatedAt();
+            return !lastTime.isAfter(Instant.now().minus(1, ChronoUnit.MINUTES));
         }
 
         return true;
@@ -77,7 +79,7 @@ public class OtpService {
         emailOtp.setOtpCode(otp);
         emailOtp.setUserId(userId);
         emailOtp.setOtpTypeId(otpTypeId);
-        emailOtp.setExpiredAt(LocalDateTime.now().plusMinutes(10));
+        emailOtp.setExpiredAt(Instant.now().plus(10,ChronoUnit.MINUTES));
         otpRepository.save(emailOtp);
 
         return emailOtp;
@@ -91,7 +93,7 @@ public class OtpService {
 
     @Transactional(noRollbackFor = AppException.class, propagation = Propagation.REQUIRES_NEW)
     public void verifyOtp(long userId, int otpTypeId, String otpCode) {
-        Otp otp = otpRepository.findLatestOtp(userId, otpTypeId)
+        Otp otp = otpRepository.findLatestOtp(userId, otpTypeId, Instant.now())
                 .orElseThrow(() -> new AppException(ErrorCode.OTP_NOT_FOUND));
 
         if (otp.getRemainingAttempts() <= 0) {

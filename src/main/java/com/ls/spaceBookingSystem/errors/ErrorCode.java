@@ -9,8 +9,15 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     UNAUTHENTICATED ("AUTH_001", "Authentication required", HttpStatus.UNAUTHORIZED),
     ACCESS_DENIED   ("AUTH_002", "Access denied",           HttpStatus.FORBIDDEN),
-    TOKEN_EXPIRED   ("AUTH_003", "Token has expired",       HttpStatus.UNAUTHORIZED),
+    ACCESS_REVOKED   ("AUTH_003", "Account access revoked",           HttpStatus.UNAUTHORIZED),
     CONCURRENT_REFRESH   ("AUTH_004", "",       HttpStatus.UNAUTHORIZED),
+    INVALID_CREDENTIALS   ("AUTH_005", "Invalid email or password",       HttpStatus.UNAUTHORIZED),
+
+    TOKEN_EXPIRED   ("TOKEN_001", "Token has expired",       HttpStatus.UNAUTHORIZED),
+    INVALID_TOKEN_TYPE   ("TOKEN_002", "Token type mismatch",       HttpStatus.UNAUTHORIZED),
+    INVALID_TOKEN   ("TOKEN_003", "Invalid Token",       HttpStatus.UNAUTHORIZED),
+    TOKEN_REVOKED   ("TOKEN_004", "Token revoked",       HttpStatus.UNAUTHORIZED),
+    TOKEN_NOT_EXPIRED   ("TOKEN_005", "Token not yet expired",       HttpStatus.UNAUTHORIZED),
 
     NOT_FOUND        ("USER_001", "User not found",                       HttpStatus.NOT_FOUND),
     EMAIL_TAKEN      ("USER_002", "Email is already registered",          HttpStatus.CONFLICT),
@@ -28,7 +35,9 @@ public enum ErrorCode {
     UNEXPECTED          ("SYS_001", "An unexpected error occurred. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_UPLOAD_FAILED  ("SYS_002", "File upload failed. Please try again.",                HttpStatus.INTERNAL_SERVER_ERROR),
     GATEWAY_FAILED      ("SYS_003", "External service is currently unavailable.",           HttpStatus.SERVICE_UNAVAILABLE),
-    DATABASE_ERROR      ("SYS_004", "A database error occurred. Please try again.",         HttpStatus.INTERNAL_SERVER_ERROR);
+    DATABASE_ERROR      ("SYS_004", "A database error occurred. Please try again.",         HttpStatus.INTERNAL_SERVER_ERROR),
+
+    TEST      ("TEST_001", "Testing Error.",         HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;
