@@ -12,7 +12,7 @@ public class HealthController {
 
     @GetMapping
     public ResponseEntity<String> healthCheck() {
-        return new ResponseEntity<>("health-check: All ok", HttpStatus.OK);
+        return new ResponseEntity<>("health-check: All okk", HttpStatus.OK);
     }
 }
 
