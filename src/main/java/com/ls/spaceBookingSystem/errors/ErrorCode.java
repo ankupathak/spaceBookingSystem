@@ -37,6 +37,12 @@ public enum ErrorCode {
     GATEWAY_FAILED      ("SYS_003", "External service is currently unavailable.",           HttpStatus.SERVICE_UNAVAILABLE),
     DATABASE_ERROR      ("SYS_004", "A database error occurred. Please try again.",         HttpStatus.INTERNAL_SERVER_ERROR),
 
+    INVALID_REQUEST ("VAL_001", "Authentication required", HttpStatus.BAD_REQUEST),
+
+    AVAILABILITY      ("AV_001", "",   HttpStatus.BAD_REQUEST),
+    INVALID_TIME_RANGE      ("AV_002", "You have overlapping time",   HttpStatus.BAD_REQUEST),
+    SLOT_DURATION_MISMATCH      ("AV_003", "",   HttpStatus.BAD_REQUEST),
+
     TEST      ("TEST_001", "Testing Error.",         HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;

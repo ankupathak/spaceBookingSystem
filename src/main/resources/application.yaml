@@ -15,6 +15,9 @@ jwt:
       threshold: ${JWT_REFRESH_THRESHOLD}
 spring:
   environment: ${APPLICATION_ENVIRONMENT}
+  myApp:
+    email:
+      from: ${APPLICATION_ENVIRONMENT}
   profiles:
     active: local
   application:

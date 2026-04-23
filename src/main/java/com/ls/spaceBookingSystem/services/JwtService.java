@@ -69,6 +69,7 @@ public class JwtService {
                     .getPayload();
 
             String actualType = claims.get("type", String.class);
+
             if (!expectedType.equals(actualType)) {
                 throw new AppException(ErrorCode.INVALID_TOKEN_TYPE)
                         .withDevMessage("Token type mismatch expected= "+expectedType+" ,actual= "+ actualType);
@@ -78,10 +79,13 @@ public class JwtService {
             return strategy.extractData(claims, issuedAt.toInstant(), expiry.toInstant());
 
         } catch (ExpiredJwtException e) {
-            throw new AppException(ErrorCode.TOKEN_EXPIRED);
+            System.out.println("e1");
+            throw new AppException(ErrorCode.TOKEN_EXPIRED).withDevMessage("Token Expired");
         } catch (AppException e) {
+            System.out.println("e2");
             throw e;
         } catch (Exception e) {
+            System.out.println("e3");
             throw new AppException(ErrorCode.INVALID_TOKEN)
                     .withDevMessage("Token validation failed type= "+expectedType+" error= "+e.getMessage());
         }

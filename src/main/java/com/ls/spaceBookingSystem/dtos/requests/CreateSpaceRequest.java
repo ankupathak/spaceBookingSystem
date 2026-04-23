@@ -5,19 +5,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
-public class VerifyAndLoginRequest {
-    @NotBlank(message = "otp is required")
-    private String otp;
+public class CreateSpaceRequest {
+    @NotBlank(message = "Space name is required")
+    private String name;
 
-    @Email(message = "Invalid email")
-    @NotBlank
-    private String email;
+    @NotBlank(message = "Description is required")
+    private String description;
 }
-

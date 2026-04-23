@@ -13,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -20,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 import java.util.List;
@@ -43,33 +45,38 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
+    @Autowired
+    @Qualifier("handlerExceptionResolver")
+    private HandlerExceptionResolver exceptionResolver;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain)
             throws ServletException, IOException {
 
-        String token = jwtService.extractAuthTokenFromRequest(request);
+        try {
+            String token = jwtService.extractAuthTokenFromRequest(request);
 
-
-        if (token != null) {
-            AccessTokenData accessTokenData = jwtService.validateAndExtract(token, jwtProperties.getAccessType());
-
-            if (blacklistService.isTokenBlackListedOrInvalidated(accessTokenData.getDeviceId(), accessTokenData.getUserId(), accessTokenData.getIssuedAt())) {
-                throw new AppException(ErrorCode.TOKEN_REVOKED);
+            if (token != null) {
+                AccessTokenData accessTokenData = jwtService.validateAndExtract(token, jwtProperties.getAccessType());
+                if (blacklistService.isTokenBlackListedOrInvalidated(accessTokenData.getDeviceId(), accessTokenData.getUserId(), accessTokenData.getIssuedAt())) {
+                    throw new AppException(ErrorCode.TOKEN_REVOKED);
+                }
+                List<GrantedAuthority> authorities = accessTokenData.getRoles().stream()
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                        .collect(Collectors.toList());
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(
+                                accessTokenData, null, authorities);
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
 
-            List<GrantedAuthority> authorities = accessTokenData.getRoles().stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                    .collect(Collectors.toList());
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(
-                            accessTokenData, null, authorities);
-
-            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            chain.doFilter(request, response);
+        } catch (AppException e) {
+            // This routes your AppException to GlobalExceptionHandler
+            exceptionResolver.resolveException(request, response, null, e);
         }
-
-        chain.doFilter(request, response);
     }
 }

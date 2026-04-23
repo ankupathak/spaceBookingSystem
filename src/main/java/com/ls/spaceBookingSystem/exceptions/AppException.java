@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -15,7 +16,7 @@ public class AppException extends RuntimeException {
 
     private final ErrorCode errorCode;
     private String devMessage;
-    private List<FieldError> errors;
+    private List<FieldError> errors = new ArrayList<>();
 
     public AppException(ErrorCode errorCode) {
         super(errorCode.getMessage());
@@ -34,6 +35,11 @@ public class AppException extends RuntimeException {
 
     public AppException withErrors(List<FieldError> errors) {
         this.errors = errors;
+        return this;
+    }
+
+    public AppException withErrors(String key, String value) {
+        this.errors.add(FieldError.of(key,value));
         return this;
     }
 }

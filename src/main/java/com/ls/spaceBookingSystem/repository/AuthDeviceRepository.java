@@ -1,6 +1,7 @@
 package com.ls.spaceBookingSystem.repository;
 
 import com.ls.spaceBookingSystem.entity.AuthDevice;
+import com.ls.spaceBookingSystem.entity.AuthDeviceId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,7 +13,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 @Repository
-public interface AuthDeviceRepository extends JpaRepository<AuthDevice, Long> {
+public interface AuthDeviceRepository extends JpaRepository<AuthDevice, AuthDeviceId> {
     @Modifying
     @Transactional
     void deleteByIdDeviceIdAndIdUserId(String deviceId, Long userId);
