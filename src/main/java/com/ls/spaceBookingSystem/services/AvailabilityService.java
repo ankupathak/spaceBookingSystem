@@ -43,7 +43,6 @@ public class AvailabilityService {
     @Autowired
     private AvailabilityTemplateRepository availabilityTemplateRepository;
 
-
     @Autowired
     private AvailabilityRuleRepository availabilityRuleRepository;
 
