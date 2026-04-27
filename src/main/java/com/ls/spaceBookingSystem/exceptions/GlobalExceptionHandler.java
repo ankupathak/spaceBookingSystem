@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -78,6 +79,24 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ErrorResponse> handleDataAccess(
+            DataAccessException ex, HttpServletRequest request) {
+
+        log.error("DB error: {}", ex.getMostSpecificCause().getMessage());
+        ErrorCode code = ErrorCode.UNEXPECTED;
+        ErrorResponse.ErrorResponseBuilder buildError = ErrorResponse.builder();
+        buildError
+                .status(code.getStatus().value())
+                .errorCode(code.getCode())
+                .message(code.getMessage());
+
+        includeDevMessage(buildError,ex.getMessage());
+        buildResponse(buildError,request);
+        return ResponseEntity.status(code.getStatus()).body(
+                buildError.build()
+        );
+    }
 
     /* -----------------------------------
        AppException
@@ -138,5 +157,9 @@ public class GlobalExceptionHandler {
                         .message(e.getMessage())
                         .build())
                 .toList();
+    }
+
+    private void includeDevMessage(ErrorResponse.ErrorResponseBuilder buildError, String devMessage) {
+        buildError.devMessage(devMessage);
     }
 }

@@ -39,9 +39,12 @@ public enum ErrorCode {
 
     INVALID_REQUEST ("VAL_001", "Authentication required", HttpStatus.BAD_REQUEST),
 
+    SPACE_NOT_FOUND      ("SPACE_001", "Space not found",   HttpStatus.BAD_REQUEST),
+
     AVAILABILITY      ("AV_001", "",   HttpStatus.BAD_REQUEST),
     INVALID_TIME_RANGE      ("AV_002", "You have overlapping time",   HttpStatus.BAD_REQUEST),
     SLOT_DURATION_MISMATCH      ("AV_003", "",   HttpStatus.BAD_REQUEST),
+    TEMPLATE_NOT_FOUND      ("AV_004", "Template not found",   HttpStatus.BAD_REQUEST),
 
     TEST      ("TEST_001", "Testing Error.",         HttpStatus.INTERNAL_SERVER_ERROR);
 

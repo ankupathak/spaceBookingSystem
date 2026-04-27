@@ -18,6 +18,7 @@ public class ErrorResponse {
     private String message;
     private String traceId;
     private String path;
+    private String devMessage;
     private LocalDateTime timestamp;
     private List<FieldError> errors;
 }

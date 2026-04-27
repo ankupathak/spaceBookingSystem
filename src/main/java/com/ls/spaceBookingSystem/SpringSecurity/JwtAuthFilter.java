@@ -69,10 +69,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
                                 accessTokenData, null, authorities);
+
                 auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
-
             chain.doFilter(request, response);
         } catch (AppException e) {
             // This routes your AppException to GlobalExceptionHandler

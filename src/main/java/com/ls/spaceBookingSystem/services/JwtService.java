@@ -79,13 +79,10 @@ public class JwtService {
             return strategy.extractData(claims, issuedAt.toInstant(), expiry.toInstant());
 
         } catch (ExpiredJwtException e) {
-            System.out.println("e1");
             throw new AppException(ErrorCode.TOKEN_EXPIRED).withDevMessage("Token Expired");
         } catch (AppException e) {
-            System.out.println("e2");
             throw e;
         } catch (Exception e) {
-            System.out.println("e3");
             throw new AppException(ErrorCode.INVALID_TOKEN)
                     .withDevMessage("Token validation failed type= "+expectedType+" error= "+e.getMessage());
         }

@@ -2,11 +2,9 @@ package com.ls.spaceBookingSystem.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
 @Table(name = "spaces")
@@ -19,7 +17,7 @@ public class Space extends BaseTimeStamp {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "template_id")
+    @Column(name = "template_id", nullable = false)
     private Long templateId;
 
     @Column(nullable = false)
