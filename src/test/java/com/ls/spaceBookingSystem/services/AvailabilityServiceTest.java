@@ -18,6 +18,7 @@ import com.ls.spaceBookingSystem.exceptions.AppException;
 import com.ls.spaceBookingSystem.repository.AvailabilityRuleRepository;
 import com.ls.spaceBookingSystem.repository.AvailabilityTemplateRepository;
 import com.ls.spaceBookingSystem.services.jwt.data.AccessTokenData;
+import com.ls.spaceBookingSystem.testData.AvailabilityTestData;
 import com.ls.spaceBookingSystem.validations.AvailabilityValidator;
 import jakarta.validation.Valid;
 import org.junit.jupiter.api.BeforeAll;
@@ -76,8 +77,8 @@ public class AvailabilityServiceTest {
         @Test
         void getTemplates_withResults_shouldReturnMappedDtos() {
             List<AvailabilityTemplate> templates =List.of(
-                    buildTemplate(1L, null),
-                    buildTemplate(1L,"Afternoon")
+                    AvailabilityTestData.buildTemplate(1L, null),
+                    AvailabilityTestData.buildTemplate(1L,"Afternoon")
             );
 
             when(availabilityTemplateRepository.findByUserId(1L)).thenReturn(templates);
@@ -107,7 +108,7 @@ public class AvailabilityServiceTest {
 
         @Test
         void getTemplate_existingTemplate_shouldReturnDto() {
-            AvailabilityTemplate template = buildTemplate(1L,null);
+            AvailabilityTemplate template = AvailabilityTestData.buildTemplate(1L,null);
 
             when(availabilityTemplateRepository.findByTemplateIdAndUserId(anyLong(), anyLong()))
                     .thenReturn(Optional.of(template));
@@ -140,7 +141,7 @@ public class AvailabilityServiceTest {
         @BeforeEach
         void setupCreateTemplateDto() {
             requestData = new CreateTemplateRequest();
-            AvailabilityTemplate t = buildTemplate(1L,null);
+            AvailabilityTemplate t = AvailabilityTestData.buildTemplate(1L,null);
             requestData.setName(t.getName());
             requestData.setMinDuration(t.getMinBookingMinutes());
             requestData.setMaxDuration(t.getMaxBookingMinutes());
@@ -250,7 +251,7 @@ public class AvailabilityServiceTest {
 
         @Test
         void updateTemplate_existingTemplate_shouldUpdateAndReturn() {
-            AvailabilityTemplate existing = buildTemplate(1L,null);
+            AvailabilityTemplate existing = AvailabilityTestData.buildTemplate(1L,null);
 
             when(availabilityTemplateRepository.findByTemplateIdAndUserId(anyLong(), anyLong()))
                     .thenReturn(Optional.of(existing));
@@ -313,7 +314,7 @@ public class AvailabilityServiceTest {
         @Test
         void updateRules_validRequest_shouldSaveRulesAndIncrementVersion() throws Exception {
 //            UpdateRulesRequest request = buildUpdateRulesRequest();
-            AvailabilityTemplate template = buildTemplate(1L, null);
+            AvailabilityTemplate template = AvailabilityTestData.buildTemplate(1L, null);
             template.setRulesVersion(2);
 
             when(availabilityTemplateRepository.findByTemplateIdAndUserId(anyLong(), anyLong()))
@@ -350,7 +351,7 @@ public class AvailabilityServiceTest {
         void updateRules_slotSerializationFails_shouldThrow() throws Exception {
 
             when(availabilityTemplateRepository.findByTemplateIdAndUserId(anyLong(), anyLong()))
-                    .thenReturn(Optional.of(buildTemplate(1L, null)));
+                    .thenReturn(Optional.of(AvailabilityTestData.buildTemplate(1L, null)));
 
             when(objectMapper.writeValueAsString(any()))
                     .thenThrow(new JsonProcessingException("fail") {});
@@ -361,20 +362,5 @@ public class AvailabilityServiceTest {
                     .isEqualTo(ErrorCode.AVAILABILITY);
         }
 
-    }
-
-
-    private static AvailabilityTemplate buildTemplate(
-            Long id, String name) {
-        AvailabilityTemplate t = new AvailabilityTemplate();
-        t.setTemplateId(id);
-        t.setUserId(1L);
-        if(name == null) t.setName("Morning");
-        else t.setName(name);
-        t.setMinBookingMinutes(30);
-        t.setMaxBookingMinutes(90);
-        t.setBufferMinutes(5);
-        t.setRulesVersion(0);
-        return t;
     }
 }
