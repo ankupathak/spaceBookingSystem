@@ -1,9 +1,9 @@
 package com.ls.spaceBookingSystem.SpringSecurity;
 
-import com.ls.spaceBookingSystem.config.JwtProperties;
-import com.ls.spaceBookingSystem.errors.ErrorCode;
-import com.ls.spaceBookingSystem.exceptions.AppException;
-import com.ls.spaceBookingSystem.repository.UserRepository;
+import com.ls.spaceBookingSystem.common.config.JwtProperties;
+import com.ls.spaceBookingSystem.common.errors.ErrorCode;
+import com.ls.spaceBookingSystem.common.exceptions.AppException;
+import com.ls.spaceBookingSystem.database.repository.UserRepository;
 import com.ls.spaceBookingSystem.services.CustomUserDetailsService;
 import com.ls.spaceBookingSystem.services.JwtService;
 import com.ls.spaceBookingSystem.services.TokenBlacklistService;

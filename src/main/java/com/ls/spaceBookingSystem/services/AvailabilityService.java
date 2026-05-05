@@ -2,34 +2,38 @@ package com.ls.spaceBookingSystem.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ls.spaceBookingSystem.database.entity.TimeSlotRange;
 import com.ls.spaceBookingSystem.dtos.requests.CreateTemplateRequest;
 import com.ls.spaceBookingSystem.dtos.requests.UpdateRulesRequest;
 import com.ls.spaceBookingSystem.dtos.requests.UpdateTemplateRequest;
 import com.ls.spaceBookingSystem.dtos.requests.availability.AvailabilityRuleDto;
-import com.ls.spaceBookingSystem.dtos.responses.CreateAccountResponse;
+import com.ls.spaceBookingSystem.dtos.requests.availability.TimeRangeRequest;
 import com.ls.spaceBookingSystem.dtos.responses.CreateTemplateResponse;
 import com.ls.spaceBookingSystem.dtos.responses.UpdateTemplateResponse;
+import com.ls.spaceBookingSystem.dtos.responses.availability.AvailabilityRuleResponseDto;
 import com.ls.spaceBookingSystem.dtos.responses.availability.AvailabilityTemplateDto;
-import com.ls.spaceBookingSystem.entity.AvailabilityRule;
-import com.ls.spaceBookingSystem.entity.AvailabilityRulePrimaryKey;
-import com.ls.spaceBookingSystem.entity.AvailabilityTemplate;
-import com.ls.spaceBookingSystem.errors.ErrorCode;
-import com.ls.spaceBookingSystem.exceptions.AppException;
-import com.ls.spaceBookingSystem.repository.AvailabilityRuleRepository;
-import com.ls.spaceBookingSystem.repository.AvailabilityTemplateRepository;
+import com.ls.spaceBookingSystem.database.entity.AvailabilityRule;
+import com.ls.spaceBookingSystem.database.entity.AvailabilityRulePrimaryKey;
+import com.ls.spaceBookingSystem.database.entity.AvailabilityTemplate;
+import com.ls.spaceBookingSystem.common.errors.ErrorCode;
+import com.ls.spaceBookingSystem.common.exceptions.AppException;
+import com.ls.spaceBookingSystem.database.repository.AvailabilityRuleRepository;
+import com.ls.spaceBookingSystem.database.repository.AvailabilityTemplateRepository;
+import com.ls.spaceBookingSystem.mapper.AvailabilityRuleMapper;
 import com.ls.spaceBookingSystem.services.jwt.data.AccessTokenData;
-import com.ls.spaceBookingSystem.validations.AvailabilityValidator;
+import com.ls.spaceBookingSystem.common.validations.validators.AvailabilityValidator;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class AvailabilityService {
+
+    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     @Autowired
     private  ObjectMapper objectMapper;
@@ -45,6 +49,9 @@ public class AvailabilityService {
 
     @Autowired
     private AvailabilityRuleRepository availabilityRuleRepository;
+
+    @Autowired
+    private AvailabilityRuleMapper availabilityRuleMapper;
 
     public List<AvailabilityTemplateDto> getTemplates() {
 
@@ -79,6 +86,18 @@ public class AvailabilityService {
                 .maxDuration(t.getMaxBookingMinutes())
                 .bufferMinutes(t.getBufferMinutes())
                 .build();
+    }
+
+    public List<AvailabilityRuleResponseDto> getTemplateRules(Long templateId) {
+
+        AccessTokenData authData = authService.getLoggedInUserData();
+
+        AvailabilityTemplate t = availabilityTemplateRepository.findByTemplateIdAndUserId(templateId,authData.getUserId())
+                .orElseThrow(() -> new AppException(ErrorCode.AVAILABILITY,"No template found"));
+
+        List<AvailabilityRule> rules = availabilityRuleRepository.findByIdTemplateId(templateId);
+
+        return rules.stream().map(availabilityRuleMapper::toResponse).toList();
     }
 
     @Transactional
@@ -151,15 +170,14 @@ public class AvailabilityService {
 
             AvailabilityRule ar = new AvailabilityRule();
             AvailabilityRulePrimaryKey id = new AvailabilityRulePrimaryKey();
-            id.setTemplate_id(templateId);
-            id.setDayOfWeek(r.getDayOfWeek());
-            ar.setId(id);
-            try {
-                ar.setSlots(objectMapper.writeValueAsString(r.getSlots()));
-            } catch (JsonProcessingException e) {
-                throw new AppException(ErrorCode.AVAILABILITY,"Something went wrong. Please try again.")
-                        .withDevMessage("FAILED_TO_SERIALIZE_SLOTS");
-            }
+                id.setTemplateId(templateId);
+                id.setDayOfWeek(r.getDayOfWeek());
+                ar.setId(id);
+            List<TimeSlotRange> slots = new ArrayList<>();
+                for(TimeRangeRequest slot: r.getSlots()) {
+                    slots.add(new TimeSlotRange(slot.getStart().format(TIME_FMT),slot.getEnd().format(TIME_FMT)));
+                }
+                ar.setSlots(slots);
 
             list.add(ar);
         }

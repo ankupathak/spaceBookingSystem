@@ -1,8 +1,10 @@
 package com.ls.spaceBookingSystem.services;
 
+import com.ls.spaceBookingSystem.common.errors.ErrorCode;
+import com.ls.spaceBookingSystem.common.exceptions.AppException;
 import com.ls.spaceBookingSystem.dtos.requests.CreateAccountRequest;
-import com.ls.spaceBookingSystem.entity.User;
-import com.ls.spaceBookingSystem.repository.UserRepository;
+import com.ls.spaceBookingSystem.database.entity.User;
+import com.ls.spaceBookingSystem.database.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,6 +28,14 @@ public class UserService {
 
     private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    public String getUserTimezone(long userId) {
+        return userRepository.findTimezoneByUserId(userId)
+        .orElseThrow(() -> new AppException(ErrorCode.UNEXPECTED)
+                .withDevMessage("unable to fetch timezone for user = "+userId)
+        );
+    }
+
+    /*
     @Transactional
     public Optional<User> createUser(CreateAccountRequest request) {
         try {
@@ -47,4 +57,6 @@ public class UserService {
     public String encodePassword(String password) {
         return passwordEncoder.encode(password);
     }
+
+     */
 }

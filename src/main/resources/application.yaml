@@ -27,8 +27,9 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
   datasource:
-    username: ${DATABASE_MYSQL_USERNAME}
-    password: ${DATABASE_MYSQL_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/spaceBookingSystem
+    username: ${DATABASE_POSTGRESQL_USERNAME}
+    password: ${DATABASE_POSTGRESQL_PASSWORD}
   jpa:
     show-sql: true
     generate-ddl: false
@@ -36,7 +37,7 @@ spring:
       ddl-auto: none
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
   mail:
     host: smtp.gmail.com
     port: 587

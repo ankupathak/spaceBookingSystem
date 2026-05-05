@@ -1,10 +1,9 @@
 package com.ls.spaceBookingSystem.services;
 
-import com.ls.spaceBookingSystem.config.MailProperties;
+import com.ls.spaceBookingSystem.common.config.MailProperties;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;

@@ -2,7 +2,7 @@ package com.ls.spaceBookingSystem.testData;
 
 import com.ls.spaceBookingSystem.dtos.requests.CreateSpaceRequestDto;
 import com.ls.spaceBookingSystem.dtos.requests.UpdateSpaceRequestDto;
-import com.ls.spaceBookingSystem.entity.Space;
+import com.ls.spaceBookingSystem.database.entity.Space;
 
 public class SpaceTestData {
 

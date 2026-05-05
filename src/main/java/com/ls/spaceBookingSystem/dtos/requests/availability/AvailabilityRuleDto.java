@@ -1,7 +1,6 @@
 package com.ls.spaceBookingSystem.dtos.requests.availability;
 
-import com.ls.spaceBookingSystem.entity.DayOfWeekEnum;
-import jakarta.validation.constraints.NotEmpty;
+import com.ls.spaceBookingSystem.database.entity.DayOfWeekEnum;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

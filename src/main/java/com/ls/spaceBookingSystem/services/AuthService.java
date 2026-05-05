@@ -1,18 +1,18 @@
 package com.ls.spaceBookingSystem.services;
 
-import com.ls.spaceBookingSystem.config.JwtProperties;
+import com.ls.spaceBookingSystem.common.config.JwtProperties;
 import com.ls.spaceBookingSystem.constants.OtpTypes;
 import com.ls.spaceBookingSystem.dtos.requests.CreateAccountRequest;
 import com.ls.spaceBookingSystem.dtos.requests.LoginRequest;
 import com.ls.spaceBookingSystem.dtos.requests.VerifyAndLoginRequest;
 import com.ls.spaceBookingSystem.dtos.responses.TokenResponse;
-import com.ls.spaceBookingSystem.entity.AuthDevice;
-import com.ls.spaceBookingSystem.entity.AuthDeviceId;
-import com.ls.spaceBookingSystem.entity.User;
-import com.ls.spaceBookingSystem.errors.ErrorCode;
-import com.ls.spaceBookingSystem.exceptions.AppException;
-import com.ls.spaceBookingSystem.repository.AuthDeviceRepository;
-import com.ls.spaceBookingSystem.repository.UserRepository;
+import com.ls.spaceBookingSystem.database.entity.AuthDevice;
+import com.ls.spaceBookingSystem.database.entity.AuthDeviceId;
+import com.ls.spaceBookingSystem.database.entity.User;
+import com.ls.spaceBookingSystem.common.errors.ErrorCode;
+import com.ls.spaceBookingSystem.common.exceptions.AppException;
+import com.ls.spaceBookingSystem.database.repository.AuthDeviceRepository;
+import com.ls.spaceBookingSystem.database.repository.UserRepository;
 import com.ls.spaceBookingSystem.services.jwt.data.AccessTokenData;
 import com.ls.spaceBookingSystem.services.jwt.data.RefreshTokenData;
 import jakarta.servlet.http.HttpServletRequest;
@@ -157,7 +157,6 @@ public class AuthService {
 
     @Transactional
     public TokenResponse refresh(String refreshToken, HttpServletRequest request, HttpServletResponse response) {
-
         if(refreshToken.isEmpty()) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
@@ -178,9 +177,9 @@ public class AuthService {
         }
 
         User user = authDeviceEntity.getUser();
-        Instant  tokenValidAfter   = user.getTokenValidAfter();
+        Instant  tokenValidAfter   = user.getTokenValidAfter().truncatedTo(ChronoUnit.MILLIS);
 
-        if (!tokenValidAfter.equals(refreshTokenData.getValidAfter())) {
+        if (!tokenValidAfter.equals(refreshTokenData.getValidAfter().truncatedTo(ChronoUnit.MILLIS))) {
             cookieService.clearRefreshCookie(response);
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
@@ -254,6 +253,7 @@ public class AuthService {
         authDeviceId.setUserId(refreshTokenData.getUserId());
         authDeviceEntity.setId(authDeviceId);
         authDeviceEntity.setUser(user);
+        authDeviceEntity.setExpiresAt(Instant.now().plus(30,ChronoUnit.DAYS));
         authDeviceRepository.save(authDeviceEntity);
 
         cookieService.setRefreshCookie(response, refreshToken);

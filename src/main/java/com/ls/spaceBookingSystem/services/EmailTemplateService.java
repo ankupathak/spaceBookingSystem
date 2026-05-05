@@ -1,6 +1,5 @@
 package com.ls.spaceBookingSystem.services;
 
-import com.ls.spaceBookingSystem.entity.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;

@@ -1,7 +1,7 @@
 package com.ls.spaceBookingSystem.dtos.responses;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.ls.spaceBookingSystem.errors.FieldError;
+import com.ls.spaceBookingSystem.common.errors.FieldError;
 import lombok.Builder;
 import lombok.Getter;
 

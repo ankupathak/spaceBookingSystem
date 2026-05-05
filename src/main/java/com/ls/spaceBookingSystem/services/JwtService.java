@@ -1,10 +1,9 @@
 package com.ls.spaceBookingSystem.services;
 
-import com.ls.spaceBookingSystem.config.JwtProperties;
-import com.ls.spaceBookingSystem.errors.ErrorCode;
-import com.ls.spaceBookingSystem.exceptions.AppException;
+import com.ls.spaceBookingSystem.common.config.JwtProperties;
+import com.ls.spaceBookingSystem.common.errors.ErrorCode;
+import com.ls.spaceBookingSystem.common.exceptions.AppException;
 import com.ls.spaceBookingSystem.services.jwt.JwtTokenStrategy;
-import com.ls.spaceBookingSystem.services.jwt.TokenValidationResult;
 import com.ls.spaceBookingSystem.services.jwt.data.RefreshTokenData;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -12,14 +11,12 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 //@ConfigurationProperties(prefix = "spring.my-app.jwt")

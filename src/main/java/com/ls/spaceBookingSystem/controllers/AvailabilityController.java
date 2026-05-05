@@ -5,6 +5,7 @@ import com.ls.spaceBookingSystem.dtos.requests.UpdateRulesRequest;
 import com.ls.spaceBookingSystem.dtos.requests.UpdateTemplateRequest;
 import com.ls.spaceBookingSystem.dtos.responses.CreateTemplateResponse;
 import com.ls.spaceBookingSystem.dtos.responses.UpdateTemplateResponse;
+import com.ls.spaceBookingSystem.dtos.responses.availability.AvailabilityRuleResponseDto;
 import com.ls.spaceBookingSystem.dtos.responses.availability.AvailabilityTemplateDto;
 import com.ls.spaceBookingSystem.services.AvailabilityService;
 import jakarta.validation.Valid;
@@ -47,5 +48,12 @@ public class AvailabilityController {
     public ResponseEntity<String> updateRules(@RequestBody @Valid UpdateRulesRequest data, @PathVariable Long templateId) {
         availabilityService.updateRules(templateId, data);
         return ResponseEntity.ok("Successfully updated rules");
+    }
+
+    @GetMapping("/{templateId}/rules")
+    public ResponseEntity<List<AvailabilityRuleResponseDto>> getTemplateRules(@PathVariable Long templateId) {
+
+        return new ResponseEntity<>(availabilityService.getTemplateRules(templateId), HttpStatus.OK
+        );
     }
 }

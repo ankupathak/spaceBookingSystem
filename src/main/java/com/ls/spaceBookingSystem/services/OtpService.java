@@ -1,11 +1,11 @@
 package com.ls.spaceBookingSystem.services;
 
 import com.ls.spaceBookingSystem.constants.OtpTypes;
-import com.ls.spaceBookingSystem.entity.Otp;
-import com.ls.spaceBookingSystem.entity.User;
-import com.ls.spaceBookingSystem.errors.ErrorCode;
-import com.ls.spaceBookingSystem.exceptions.AppException;
-import com.ls.spaceBookingSystem.repository.OtpRepository;
+import com.ls.spaceBookingSystem.database.entity.Otp;
+import com.ls.spaceBookingSystem.database.entity.User;
+import com.ls.spaceBookingSystem.common.errors.ErrorCode;
+import com.ls.spaceBookingSystem.common.exceptions.AppException;
+import com.ls.spaceBookingSystem.database.repository.OtpRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

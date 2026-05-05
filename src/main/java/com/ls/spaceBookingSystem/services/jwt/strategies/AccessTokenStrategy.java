@@ -1,6 +1,6 @@
 package com.ls.spaceBookingSystem.services.jwt.strategies;
 
-import com.ls.spaceBookingSystem.config.JwtProperties;
+import com.ls.spaceBookingSystem.common.config.JwtProperties;
 import com.ls.spaceBookingSystem.services.jwt.JwtTokenStrategy;
 import com.ls.spaceBookingSystem.services.jwt.data.AccessTokenData;
 import io.jsonwebtoken.Claims;
@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 @Component

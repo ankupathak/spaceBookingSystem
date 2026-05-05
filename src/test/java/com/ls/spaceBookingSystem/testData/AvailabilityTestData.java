@@ -1,6 +1,6 @@
 package com.ls.spaceBookingSystem.testData;
 
-import com.ls.spaceBookingSystem.entity.AvailabilityTemplate;
+import com.ls.spaceBookingSystem.database.entity.AvailabilityTemplate;
 
 public class AvailabilityTestData {
     public static AvailabilityTemplate buildTemplate(

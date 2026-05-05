@@ -1,16 +1,18 @@
 package com.ls.spaceBookingSystem.services;
 
-import com.ls.spaceBookingSystem.config.JwtProperties;
+import com.ls.spaceBookingSystem.common.config.JwtProperties;
 import com.ls.spaceBookingSystem.constants.OtpTypes;
+import com.ls.spaceBookingSystem.database.entity.AuthDevice;
+import com.ls.spaceBookingSystem.database.entity.AuthDeviceId;
+import com.ls.spaceBookingSystem.database.entity.User;
 import com.ls.spaceBookingSystem.dtos.requests.CreateAccountRequest;
 import com.ls.spaceBookingSystem.dtos.requests.VerifyAndLoginRequest;
 import com.ls.spaceBookingSystem.dtos.responses.TokenResponse;
-import com.ls.spaceBookingSystem.entity.*;
-import com.ls.spaceBookingSystem.errors.ErrorCode;
-import com.ls.spaceBookingSystem.exceptions.AppException;
-import com.ls.spaceBookingSystem.repository.AuthDeviceRepository;
-import com.ls.spaceBookingSystem.repository.OtpRepository;
-import com.ls.spaceBookingSystem.repository.UserRepository;
+import com.ls.spaceBookingSystem.common.errors.ErrorCode;
+import com.ls.spaceBookingSystem.common.exceptions.AppException;
+import com.ls.spaceBookingSystem.database.repository.AuthDeviceRepository;
+import com.ls.spaceBookingSystem.database.repository.OtpRepository;
+import com.ls.spaceBookingSystem.database.repository.UserRepository;
 import com.ls.spaceBookingSystem.services.jwt.data.AccessTokenData;
 import com.ls.spaceBookingSystem.services.jwt.data.RefreshTokenData;
 import com.ls.spaceBookingSystem.testData.auth.CreateAccountRequestBuilder;
@@ -24,18 +26,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 

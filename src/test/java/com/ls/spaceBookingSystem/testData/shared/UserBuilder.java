@@ -1,6 +1,6 @@
 package com.ls.spaceBookingSystem.testData.shared;
 
-import com.ls.spaceBookingSystem.entity.User;
+import com.ls.spaceBookingSystem.database.entity.User;
 
 import java.time.Instant;
 

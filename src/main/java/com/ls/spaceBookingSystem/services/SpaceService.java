@@ -3,12 +3,12 @@ package com.ls.spaceBookingSystem.services;
 import com.ls.spaceBookingSystem.dtos.requests.CreateSpaceRequestDto;
 import com.ls.spaceBookingSystem.dtos.requests.UpdateSpaceRequestDto;
 import com.ls.spaceBookingSystem.dtos.responses.SpaceResponseDto;
-import com.ls.spaceBookingSystem.entity.AvailabilityTemplate;
-import com.ls.spaceBookingSystem.entity.Space;
-import com.ls.spaceBookingSystem.errors.ErrorCode;
-import com.ls.spaceBookingSystem.exceptions.AppException;
-import com.ls.spaceBookingSystem.repository.AvailabilityTemplateRepository;
-import com.ls.spaceBookingSystem.repository.SpaceRepository;
+import com.ls.spaceBookingSystem.database.entity.AvailabilityTemplate;
+import com.ls.spaceBookingSystem.database.entity.Space;
+import com.ls.spaceBookingSystem.common.errors.ErrorCode;
+import com.ls.spaceBookingSystem.common.exceptions.AppException;
+import com.ls.spaceBookingSystem.database.repository.AvailabilityTemplateRepository;
+import com.ls.spaceBookingSystem.database.repository.SpaceRepository;
 import com.ls.spaceBookingSystem.services.jwt.data.AccessTokenData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,8 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.sql.SQLIntegrityConstraintViolationException;
 
 
 @Service
@@ -39,7 +37,7 @@ public class SpaceService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         return spaceRepository
-                .findByUserIdAndNameContaining(auth.getUserId(), name, pageable)
+                .findByUserIdAndNameContaining(auth.getUserId(), name == null ? "" : name, pageable)
                 .map(this::toSpaceResponseDto);
     }
 
@@ -112,6 +110,7 @@ public class SpaceService {
                 .orElseThrow(() -> new AppException(ErrorCode.SPACE_NOT_FOUND));
         spaceRepository.delete(space);
     }
+
 
     private SpaceResponseDto toSpaceResponseDto(Space space) {
         return SpaceResponseDto.builder()
