@@ -78,7 +78,7 @@ public class BookingService {
                 .start(start)
                 .end(end)
                 .bookerTimezone(bookerTimezoneStr)
-                .status(BookingStatus.CONFIRMED) // We skip PENDING and go straight to CONFIRMED!
+                .status(BookingStatus.CONFIRMED)
                 .bufferMinutes(buffer)
                 .templateVersion(template.getTemplateVersion())
                 .ruleVersion(template.getRulesVersion())
@@ -86,8 +86,6 @@ public class BookingService {
 
         // Step 6: The "Dumb" Insert
         try {
-            // We blindly insert. If there is a collision, the PostgreSQL GiST index
-            // acts as a physical shield and throws an integrity exception.
             Booking saved = bookingRepository.save(booking);
             return bookingMapper.toResponse(saved);
 

@@ -6,6 +6,8 @@ import com.ls.spaceBookingSystem.database.entity.User;
 import com.ls.spaceBookingSystem.common.errors.ErrorCode;
 import com.ls.spaceBookingSystem.common.exceptions.AppException;
 import com.ls.spaceBookingSystem.database.repository.OtpRepository;
+import com.ls.spaceBookingSystem.messageBroker.rabbitMq.Producers.EmailProducer;
+import com.ls.spaceBookingSystem.services.email.OtpEmailTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,9 @@ public class OtpService {
     private  EmailTemplateService emailTemplateService;
 
     @Autowired
+    private EmailProducer emailProducer;
+
+    @Autowired
     private EmailService emailService;
 
     public String getEmailOtp(User user,  OtpTypes otpTypeCode) {
@@ -35,7 +40,8 @@ public class OtpService {
 
         Otp emailOtp = createOtp(user.getUserId(), otpTypeCode.getId());
 
-        String html = emailTemplateService.renderCreateAccountOtpEmail(user.getFullName(), emailOtp.getOtpCode());
+        OtpEmailTemplate template = new OtpEmailTemplate(user.getEmail(),user.getFullName(),emailOtp.getOtpCode());
+        String html = emailTemplateService.render(template);
         emailService.sendMail(user.getEmail(),"Otp for Account Creation for Space Booking System", html);
         return "Otp is sent to "+user.getEmail()+". Pls check spam folder as well in case you don't receive the otp";
     }

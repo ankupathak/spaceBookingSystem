@@ -37,34 +37,4 @@ public class BookingController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(bookingService.validateAndCreateBooking(request));
     }
-/*
-    @DeleteMapping("/{id}")
-    public ResponseEntity<BookingResponse> cancel(
-            @AuthenticationPrincipal Long userId,
-            @PathVariable Long id) {
-        return ResponseEntity.ok(bookingService.cancel(id, userId));
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<BookingResponse> getById(
-            @AuthenticationPrincipal Long userId,
-            @PathVariable Long id) {
-        return ResponseEntity.ok(bookingService.getById(id, userId));
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<List<BookingResponse>> getMyBookings(
-            @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.ok(bookingService.getMyBookings(userId));
-    }
-
-    @GetMapping("/space/{spaceId}")
-    public ResponseEntity<List<BookingResponse>> getSpaceBookings(
-            @PathVariable Long spaceId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to) {
-        return ResponseEntity.ok(bookingService.getSpaceBookings(spaceId, from, to));
-    }
-
- */
 }

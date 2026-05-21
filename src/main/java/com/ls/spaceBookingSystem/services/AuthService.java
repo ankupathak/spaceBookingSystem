@@ -13,6 +13,8 @@ import com.ls.spaceBookingSystem.common.errors.ErrorCode;
 import com.ls.spaceBookingSystem.common.exceptions.AppException;
 import com.ls.spaceBookingSystem.database.repository.AuthDeviceRepository;
 import com.ls.spaceBookingSystem.database.repository.UserRepository;
+import com.ls.spaceBookingSystem.messageBroker.rabbitMq.Producers.EmailProducer;
+import com.ls.spaceBookingSystem.services.email.WelcomeEmailTemplate;
 import com.ls.spaceBookingSystem.services.jwt.data.AccessTokenData;
 import com.ls.spaceBookingSystem.services.jwt.data.RefreshTokenData;
 import jakarta.servlet.http.HttpServletRequest;
@@ -71,6 +73,9 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private EmailProducer emailProducer;
+
     public String registration(CreateAccountRequest user) {
         User newUser = userRepository.findByEmail(user.getEmail())
                 .orElseGet(() -> createNewUser(user));
@@ -79,7 +84,6 @@ public class AuthService {
         }
 
         return otpService.getEmailOtp(newUser, OtpTypes.REGISTRATION_EMAIL_OTP);
-
     }
 
     @Transactional
@@ -93,9 +97,8 @@ public class AuthService {
 
         user.setEmailVerified(true);
         userRepository.save(user);
-
-        String html = emailTemplateService.renderNewUserWelcomeEmail(user.getFullName());
-        emailService.sendMail(user.getEmail(),"\uD83D\uDC4B Welcome to Space Booking", html);
+        WelcomeEmailTemplate template = new WelcomeEmailTemplate(user.getEmail(), user.getFullName());
+        emailProducer.publishEmailEvent(template);
 
         return issueTokens(user, response);
     }

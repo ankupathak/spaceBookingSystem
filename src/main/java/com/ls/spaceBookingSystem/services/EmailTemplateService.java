@@ -1,5 +1,6 @@
 package com.ls.spaceBookingSystem.services;
 
+import com.ls.spaceBookingSystem.services.email.EmailTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -15,16 +16,13 @@ public class EmailTemplateService {
         this.templateEngine = templateEngine;
     }
 
-    public String renderCreateAccountOtpEmail(String name, String otp) {
+    public String render(EmailTemplate template) {
         Context context = new Context();
-        context.setVariable("name", name);
-        context.setVariable("otp", otp);
-        return templateEngine.process("email/create-account-otp", context);
-    }
-
-    public String renderNewUserWelcomeEmail(String name) {
-        Context context = new Context();
-        context.setVariable("name", name);
-        return templateEngine.process("email/new-user-welcome", context);
+        template.populateContext(context);          // ← runtime dispatch
+        String html = templateEngine.process(
+                template.getTemplateName(), context  // ← runtime dispatch
+        );
+        log.info("Rendered template: {}", template.getTemplateName());
+        return html;
     }
 }
